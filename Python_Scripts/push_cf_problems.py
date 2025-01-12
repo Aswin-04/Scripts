@@ -53,10 +53,11 @@ if not has_untracked_files:
 for problem_name in untracked_files:
 
   try:
-    subprocess.run(["git", "add", problem_name], cwd=path, check=True)
+    subprocess.run(["git", "add", problem_name], cwd=path, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   except subprocess.CalledProcessError as e:
     print(f"Error while staging the file {problem_name}: {e}")
-    subprocess.run(["git", "reset", "HEAD"], cwd=path)
+    subprocess.run(["git", "reset", "HEAD"], cwd=path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print(f"Unstaged {problem_name}. Changes are still in the working directory.")
     sys.exit(1)
 
 
@@ -65,23 +66,26 @@ for problem_name in untracked_files:
       ["git","commit", "-m", f"Solved Problem {problem_name.rsplit(".", 1)[0]}"], #rsplit to remove .cpp extension
       cwd=path,
       check=True,
+      stdout=subprocess.PIPE, 
+      stderr=subprocess.PIPE
     )
   except subprocess.CalledProcessError as e:
     print(f"Error while commiting the file {problem_name}: {e}")
-    subprocess.run(["git", "reset", "HEAD"], cwd=path)
+    subprocess.run(["git", "reset", "HEAD"], cwd=path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print(f"Unstaged {problem_name}. Changes are still in the working directory.")
     sys.exit(1)
 
   try:
-    subprocess.run(["git", "push"], cwd=path, check=True)
+    subprocess.run(["git", "push"], cwd=path, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     print(f"Successfully pushed: {problem_name}")
 
   except subprocess.CalledProcessError as e:
     print(f"Error pushing file {problem_name}: {e}")
 
-    subprocess.run(["git", "reset", "--soft", "HEAD~1"], cwd=path) #uncommit
+    subprocess.run(["git", "reset", "--soft", "HEAD~1"], cwd=path, stdout=subprocess.PIPE, stderr=subprocess.PIPE) #uncommit
     print(f"Uncommitted changes for {problem_name}. Resetting to the previous commit.")
 
-    subprocess.run(["git", "restore", "--staged", problem_name], cwd=path) #unstage the file
+    subprocess.run(["git", "restore", "--staged", problem_name], cwd=path, stdout=subprocess.PIPE, stderr=subprocess.PIPE) #unstage the file
     print(f"Unstaged {problem_name}. Changes are still in the working directory.")
 
     sys.exit(1)

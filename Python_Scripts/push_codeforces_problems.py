@@ -64,12 +64,13 @@ git_status = run_git_command(["git", "status", "--porcelain"], path, "Error exec
 untracked_files = []
 modified_files = []
 
+
 for line in git_status.split("\n"):
-  status, file_path = line.split()
+  status, file_path = line.strip().split()
   if status.startswith("??") and file_path.endswith(".cpp"): #untracked files
     if file_path.startswith(rating):
       untracked_files.append(os.path.basename(file_path))
-  elif line.startswith("M") and line.endswith(".cpp"):
+  elif status.startswith("M") and file_path.endswith(".cpp"):
     if file_path.startswith(rating):
       modified_files.append(os.path.basename(file_path))
 
